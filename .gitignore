@@ -1,0 +1,23 @@
+# Never commit secrets
+*.env
+*.env.*
+secrets/
+google_token.json
+google_credentials.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local
+*.log
+.DS_Store
