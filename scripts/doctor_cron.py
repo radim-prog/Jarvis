@@ -2,7 +2,7 @@
 """Non-interactive health check — runs on cron, alerts to Telegram only when something is broken.
 
 Suggested cron entry:
-  55 5 * * *   /usr/bin/python3 /root/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
+  55 5 * * *   /usr/bin/python3 $HOME/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
 
 Configuration via ~/.claude/secrets/.env:
   TELEGRAM_BOT_TOKEN   = <bot token from @BotFather>          required for alerts

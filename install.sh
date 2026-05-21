@@ -22,8 +22,8 @@ echo
 echo "Done. Suggested cron entries:"
 echo
 cat <<'EOF'
-  */15 * * * * /usr/bin/python3 /root/.claude/scripts/build_recall_index.py >/dev/null 2>&1
-  55  5 * * * /usr/bin/python3 /root/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
+  */15 * * * * /usr/bin/python3 $HOME/.claude/scripts/build_recall_index.py >/dev/null 2>&1
+  55  5 * * * /usr/bin/python3 $HOME/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
 EOF
 
 echo

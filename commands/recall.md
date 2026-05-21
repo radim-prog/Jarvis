@@ -24,7 +24,7 @@ Inspired by Hermes Agent's session memory. Indexes ~/.claude/projects/**/*.jsonl
 3. If the index is stale or missing, rebuild first: `python3 ~/.claude/scripts/build_recall_index.py` (incremental — only new/modified jsonls). Use `--full` for a fresh wipe.
 4. Output is one line per hit: `timestamp  role  project  session_id  snippet`. Pick a session_id to dive deeper:
    ```bash
-   ls /root/.claude/projects/*/<session_id>.jsonl
+   ls $HOME/.claude/projects/*/<session_id>.jsonl
    ```
 5. Summarize hits for the user — don't dump raw output.
 
@@ -44,7 +44,7 @@ python3 ~/.claude/scripts/recall.py "topic" --project my-project
 ## Maintenance
 
 - Incremental refresh is fast (<5s if nothing changed). Full rebuild ~50s for ~2k sessions on a typical workstation.
-- Suggested cron: `*/15 * * * * /usr/bin/python3 /root/.claude/scripts/build_recall_index.py >/dev/null 2>&1` — incremental refresh every 15 min.
+- Suggested cron: `*/15 * * * * /usr/bin/python3 $HOME/.claude/scripts/build_recall_index.py >/dev/null 2>&1` — incremental refresh every 15 min.
 - DB lives at `~/.claude/recall.db`. Safe to delete and rebuild — no source of truth, just an index.
 
 ## Safety

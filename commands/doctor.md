@@ -30,7 +30,7 @@ Run all checks in parallel via single Bash block. Report as compact table groupe
 
 ### 3. MCP servers
 - Read `~/.claude/.mcp.json` (NOT settings.json — MCP config lives there)
-- `python3 -c "import json; s=json.load(open('/root/.claude/.mcp.json')); print(len(s.get('mcpServers',{})), 'configured'); [print(f'  {k}') for k in s.get('mcpServers',{})]"`
+- `python3 -c "import json; s=json.load(open('$HOME/.claude/.mcp.json')); print(len(s.get('mcpServers',{})), 'configured'); [print(f'  {k}') for k in s.get('mcpServers',{})]"`
 - For each: probe is process running / endpoint reachable
 
 ### 4. Background services
@@ -74,7 +74,7 @@ End with one-line verdict: `Healthy.` / `Degraded — N issues.` / `Broken — f
 The companion script `scripts/doctor_cron.py` runs the same checks non-interactively for cron. Suggested entry:
 
 ```cron
-55 5 * * * /usr/bin/python3 /root/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
+55 5 * * * /usr/bin/python3 $HOME/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
 ```
 
 Set `TELEGRAM_CHAT_ID` in `~/.claude/secrets/.env` to receive alerts when something fails. Healthy runs are silent.
