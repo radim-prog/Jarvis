@@ -11,8 +11,8 @@ mkdir -p "${TARGET}/commands" "${TARGET}/rules" "${TARGET}/scripts"
 
 cp -v "${SOURCE}/commands/"*.md "${TARGET}/commands/"
 cp -v "${SOURCE}/rules/"*.md     "${TARGET}/rules/"
-cp -v "${SOURCE}/scripts/"*.py   "${TARGET}/scripts/"
-chmod +x "${TARGET}/scripts/"*.py
+cp -v "${SOURCE}/scripts/"*       "${TARGET}/scripts/"
+chmod +x "${TARGET}/scripts/"*.py "${TARGET}/scripts/"*.sh
 
 echo
 echo "Building recall index (this may take ~1 minute on a busy workstation)..."
@@ -24,6 +24,8 @@ echo
 cat <<'EOF'
   */15 * * * * /usr/bin/python3 $HOME/.claude/scripts/build_recall_index.py >/dev/null 2>&1
   55  5 * * * /usr/bin/python3 $HOME/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
+  30  6 * * * $HOME/.claude/scripts/key-monitor.sh >/dev/null 2>&1
+  0   * * * * $HOME/.claude/scripts/uptime-check.sh >/dev/null 2>&1
 EOF
 
 echo

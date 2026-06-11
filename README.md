@@ -1,5 +1,7 @@
 # Jarvis — Claude Code customization pack
 
+**Version 1.1.0** · see [CHANGELOG.md](CHANGELOG.md)
+
 A small, opinionated set of slash commands, rules, and helper scripts that turn vanilla [Claude Code](https://claude.com/claude-code) into a more autonomous personal-assistant setup. Inspired by the [Hermes Agent](https://github.com/NousResearch/HermesAgent) idea of treating the agent as a long-running coworker that learns from experience and reconciles its own memory.
 
 This is **personal infrastructure shared as-is**. There is no installer that "just works" without you wiring up your own keys and services. The repo is meant for you to fork or clone, then keep tweaking.
@@ -34,6 +36,8 @@ scripts/                    helper scripts (~/.claude/scripts/ or /usr/local/bin
   merge-guard.sh            pre-merge governance check for GitHub PRs (draft / CI / blocker words)
   wa-send.sh                send WhatsApp via a WAHA container
   claude-self-upgrade.sh    restart a tmux Claude session to pick up a newer binary
+  key-monitor.sh            daily probe of API tokens (GitHub/Google/Telegram/WAHA), alert on failure
+  uptime-check.sh           poll URLs, alert only on up<->down transitions (SQLite state + quiet hours)
 ```
 
 ## Install
@@ -59,6 +63,8 @@ And add cron entries (run `crontab -e`):
 ```cron
 */15 * * * * /usr/bin/python3 $HOME/.claude/scripts/build_recall_index.py >/dev/null 2>&1
 55  5 * * *  /usr/bin/python3 $HOME/.claude/scripts/doctor_cron.py >/tmp/doctor.log 2>&1
+30  6 * * *  $HOME/.claude/scripts/key-monitor.sh >/dev/null 2>&1
+0   * * * *  $HOME/.claude/scripts/uptime-check.sh >/dev/null 2>&1
 # Optional, only if you run multiple Claude Code instances in tmux:
 */5 * * * *  $HOME/.claude/scripts/bot-monitor.sh >/dev/null 2>&1
 ```
@@ -71,8 +77,10 @@ And add cron entries (run `crontab -e`):
 |---|---|
 | `ANTHROPIC_API_KEY` | counted as a critical secret in `/doctor` |
 | `GITHUB_PERSONAL_ACCESS_TOKEN` | same |
-| `TELEGRAM_BOT_TOKEN` | required for `/doctor` and `bot-monitor.sh` alerts |
+| `TELEGRAM_BOT_TOKEN` | required for `/doctor`, `bot-monitor.sh`, `key-monitor.sh` and `uptime-check.sh` alerts |
 | `TELEGRAM_CHAT_ID` | numeric chat id to receive alerts |
+| `TELEGRAM_BOT_TOKENS` | optional CSV of extra bot tokens for `key-monitor.sh` to verify via `getMe` |
+| `HEALTH_URLS` | CSV of `host|label` entries for `uptime-check.sh`, e.g. `example.com|Main,api.example.com|API` |
 | `GROQ_API_KEY` | required by `transcribe.sh` (Whisper transcription) |
 | `WAHA_API_KEY` | optional — only if you run a [WAHA](https://waha.devlike.pro/) WhatsApp container and want `wa-send.sh` |
 | `WAHA_URL` | optional override, default `http://127.0.0.1:3100/api/sessions` |
@@ -106,6 +114,8 @@ Shell scripts you can call from anywhere (after `chmod +x` and PATH or symlink t
 | `merge-guard.sh owner/repo 42 --auto-merge` | actually squash-merges if all checks pass |
 | `wa-send.sh 420XXXXXXXXX "text"` | send a WhatsApp message through your local WAHA container |
 | `claude-self-upgrade.sh <tmux-session>` | from a sidecar pane, restart a stuck Claude session to pick up a newer binary |
+| `key-monitor.sh` | run from cron; probes each configured API token and alerts only on failure |
+| `uptime-check.sh` | run from cron; polls `HEALTH_URLS` and alerts only when a site flips up<->down |
 
 ## Philosophy
 
@@ -113,7 +123,7 @@ Three patterns lifted from Hermes:
 
 1. **Self-improving skills.** When you find yourself doing the same multi-step task a second or third time, formalize it. `rules/self-improving-skills.md` is the rule the agent reads to decide when to write one. `/capture-skill` is the on-demand version.
 2. **Recall over memory.** `~/.claude/projects/.../memory/MEMORY.md` is the *conclusions* layer (small, hand-curated). `recall.db` is the *everything* layer (fast full-text over jsonl history). The agent picks the right one for the job.
-3. **Silent green, loud red.** `doctor_cron.py` and `bot-monitor.sh` only ping Telegram when something is broken. No notification = healthy.
+3. **Silent green, loud red.** `doctor_cron.py`, `bot-monitor.sh`, `key-monitor.sh` and `uptime-check.sh` only ping Telegram when something is broken. No notification = healthy.
 
 ## Caveats
 
