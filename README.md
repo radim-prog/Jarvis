@@ -1,6 +1,6 @@
 # Jarvis — Claude Code customization pack
 
-**Version 1.1.0** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 1.2.0** · see [CHANGELOG.md](CHANGELOG.md)
 
 A small, opinionated set of slash commands, rules, and helper scripts that turn vanilla [Claude Code](https://claude.com/claude-code) into a more autonomous personal-assistant setup. Inspired by the [Hermes Agent](https://github.com/NousResearch/HermesAgent) idea of treating the agent as a long-running coworker that learns from experience and reconciles its own memory.
 
@@ -17,14 +17,24 @@ commands/                   slash commands (~/.claude/commands/<name>.md)
   security-sweep.md         adversarial security audit (hackSultan prompt)
   user-model-review.md      weekly review of accumulated user-memory
 
+skills/                     multi-step skills (~/.claude/skills/<name>/SKILL.md)
+  decompose/SKILL.md        long recording/spec → per-task PRDs → dependency map → queue
+
 rules/                      auto-loaded rules (~/.claude/rules/<name>.md)
   self-improving-skills.md  when/how to write a new reusable skill
+  definition-of-done.md     the 3 enforceable gates a big task must clear to ship
   context-saving.md         persist long task briefs into .claude-context/
   cross-project.md          read-only awareness of sibling projects under ~/Projects/
   gmail-send.md             docs for the gmail-send CLI helper
   mcp-usage.md              tool priority and MCP server cheatsheet
   project-structure.md      preferred Next.js / Supabase layout
   research-first-detail.md  research-before-implement workflow
+
+hooks/                      settings.json hooks (~/.claude/hooks/<name>.sh)
+  completion-gate.sh        PreToolUse: blocks "done/deployed" claims with no screenshot
+
+docs/                       longer-form patterns
+  fleet-tmux-orchestration.md  run many Claude Code instances in tmux as a coordinated fleet
 
 scripts/                    helper scripts (~/.claude/scripts/ or /usr/local/bin)
   build_recall_index.py     SQLite FTS5 index over ~/.claude/projects/**/*.jsonl
@@ -44,12 +54,19 @@ scripts/                    helper scripts (~/.claude/scripts/ or /usr/local/bin
 
 ```bash
 git clone https://github.com/<your-handle>/Jarvis.git ~/jarvis-source
-mkdir -p ~/.claude/commands ~/.claude/rules ~/.claude/scripts
-cp ~/jarvis-source/commands/*.md   ~/.claude/commands/
-cp ~/jarvis-source/rules/*.md      ~/.claude/rules/
-cp ~/jarvis-source/scripts/*       ~/.claude/scripts/
-chmod +x ~/.claude/scripts/*.py ~/.claude/scripts/*.sh
+mkdir -p ~/.claude/commands ~/.claude/rules ~/.claude/scripts \
+         ~/.claude/hooks ~/.claude/skills/decompose
+cp ~/jarvis-source/commands/*.md          ~/.claude/commands/
+cp ~/jarvis-source/rules/*.md             ~/.claude/rules/
+cp ~/jarvis-source/scripts/*              ~/.claude/scripts/
+cp ~/jarvis-source/hooks/*.sh             ~/.claude/hooks/
+cp ~/jarvis-source/skills/decompose/*.md  ~/.claude/skills/decompose/
+chmod +x ~/.claude/scripts/*.py ~/.claude/scripts/*.sh ~/.claude/hooks/*.sh
 ```
+
+`hooks/completion-gate.sh` only fires once you wire it into `~/.claude/settings.json`
+as a `PreToolUse` hook on your outgoing message tool — see the header of the script
+for the exact snippet and the `GATE_*` env knobs.
 
 That's it for the files. Then bring the recall index online:
 
@@ -100,6 +117,7 @@ Once installed, the slash commands are available in any Claude Code session:
 | `/doctor` | one-screen interactive health check |
 | `/recall <query>` | search every past Claude session by keyword (FTS5: `AND`/`OR`/`NEAR`/`"phrase"`) |
 | `/capture-skill` | distill the work just done in this session into a new slash command |
+| `/decompose` | break a long recording/spec into per-task PRDs + a dependency map, then load your queue |
 | `/security-sweep` | adversarial security audit of the current codebase |
 | `/user-model-review` | reconcile accumulated `~/.claude/projects/<project>/memory/` files |
 
@@ -116,6 +134,49 @@ Shell scripts you can call from anywhere (after `chmod +x` and PATH or symlink t
 | `claude-self-upgrade.sh <tmux-session>` | from a sidecar pane, restart a stuck Claude session to pick up a newer binary |
 | `key-monitor.sh` | run from cron; probes each configured API token and alerts only on failure |
 | `uptime-check.sh` | run from cron; polls `HEALTH_URLS` and alerts only when a site flips up<->down |
+
+## Orchestration economics
+
+The most expensive way to run an agent is one smart model doing everything in one
+context window. This pack leans on a cheaper, more reliable division of labour, and
+on quality gates that catch the usual "looks done, isn't" failure.
+
+**Smart-plans, cheap-executes.** A smart model (your orchestrator) writes a large,
+detailed plan with strict rules, checks, and tests — and **reserves the final review
+step for itself**. The plan is handed to cheaper models for execution. When they
+report back, the smart model **takes the work over and reviews it** against what the
+plan demanded — cross-model (a different model than the author), never self-approval
+in the same context. It feels slightly slower but burns far fewer tokens, and big
+tasks finish faster because cheap executors run in parallel.
+
+**Caveman — terser agent-to-agent speech.** For the *execution* leg you can have
+agents talk to each other in a clipped, telegraphic "caveman" style that drops
+filler words. It saves roughly **15–25 % of output tokens** on mechanical work. It's
+an external plugin ([`JuliusBrussee/caveman`](https://github.com/JuliusBrussee/caveman)) —
+**this pack does not bundle it**, it just recommends it. Install and toggle per its
+own docs (typically `npx -y github:JuliusBrussee/caveman`; the same command with
+`-- --uninstall` removes it).
+
+> **Rule: caveman OFF for specs, final reviews, and reports to the human.** Use it
+> only for the mechanical execution leg (bulk code, refactors, extraction). Anything
+> where precision or human-readability matters — writing the spec, every verification
+> gate, and any message back to the user — stays in normal, full language.
+
+**Definition of Done — 3 enforceable gates.** This is the key quality differentiator.
+A non-trivial task is not "done" until it clears all three:
+
+1. **Reverse-check against the original assignment** by an *independent* model — a
+   matrix of every requested item → done / coded-but-not-deployed / missing.
+2. **Tester confirms the user sees it in the UI** — clicking through the live app,
+   not "the API returns 200" or "the flag is on".
+3. **Visual proof to the human** — a screenshot of the live feature delivered with
+   the milestone report, so the human never has to go digging.
+
+`rules/definition-of-done.md` is the rule the agent reads; `hooks/completion-gate.sh`
+nudges you when you try to claim "deployed/done" with no screenshot attached. See
+**[docs/fleet-tmux-orchestration.md](docs/fleet-tmux-orchestration.md)** for the
+multi-instance side of this: how to run several Claude Code workers in tmux under one
+orchestrator — the piece that a single-instance setup can't match.
 
 ## Philosophy
 
@@ -138,6 +199,7 @@ Three patterns lifted from Hermes:
 - [Boris Cherny](https://github.com/bcherny) — original `/go` composite idea
 - [Nous Research / Hermes Agent](https://github.com/NousResearch/HermesAgent) — self-improving skill pattern, session memory, host doctor
 - [@hackSultan](https://x.com/hackSultan/status/2046269993898181081) — security audit prompt verbatim
+- [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) — the token-saving "caveman" agent-speech plugin (recommended, not bundled)
 
 ## License
 
