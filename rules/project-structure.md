@@ -1,32 +1,33 @@
-# Struktura projektů
+# Project structure
 
-## Kde pracovat
+## Where to work
 
-- **~/Projects/** - pracovní složka (LOKÁLNÍ DISK) pro všechny aktivní projekty
-- **Google Drive** - JEN dokumenty (PDF, obrázky, videa) - NIKDY node_modules!
-- Záloha kódu: GitHub, NE Google Drive
+- **~/Projects/** — working directory (local disk) for all active projects
+- Cloud storage (Drive, Dropbox, etc.) — documents only (PDFs, images, media) — NEVER `node_modules/`
+- Code backup: git + GitHub, not cloud storage
 
-## Preferovaná Next.js struktura
+## Preferred Next.js layout
 
 ```
-~/Projects/muj-projekt/
+~/Projects/my-project/
 ├── app/
 │   ├── (dashboard)/          # Route groups
 │   └── api/                  # API routes
 ├── lib/
 │   ├── utils.ts
-│   ├── supabase.ts
-│   └── types/                # Sdílené typy
+│   ├── db.ts                 # Database client
+│   └── types/                # Shared types
 ├── components/
-│   └── ui/                   # shadcn components
+│   └── ui/                   # UI component library
 ├── public/
-├── .claude-context/          # Zachovaný kontext konverzací
-├── node_modules/             # OK na lokálním disku
+├── .claude-context/          # Saved conversation context
+├── node_modules/             # Fine on local disk, never commit / sync
 └── .next/                    # Build cache
 ```
 
-## Pravidla
+## Rules
 
-- `node_modules/` a `.next/` NIKDY do Google Drive
-- Každý projekt má svůj `.gitignore` s `.env.local`, `node_modules/`, `.next/`
-- Supabase projekty: `lib/supabase-admin.ts` pro service_role client
+- `node_modules/` and `.next/` NEVER go to cloud storage
+- Every project has its own `.gitignore` with `.env*`, `node_modules/`, `.next/`
+- For database admin clients, use a dedicated file (e.g. `lib/db-admin.ts`) with
+  the service-role credential separate from the public client

@@ -21,10 +21,11 @@ STATE_DIR="${STATE_DIR:-$HOME/.bot-monitor}"
 IDLE_THRESHOLD="${IDLE_THRESHOLD:-2}"  # alert after this many idle cycles
 mkdir -p "$STATE_DIR"
 
-# Bot list: "name:tmux-session" — edit to match your setup
+# Bot list: "name:tmux-session" — edit to match your tmux session names.
+# Each entry is "display-name:tmux-session-name".
 BOT_LIST=(
-  "CCbot2:CCbot2"
-  "Worker1:worker-1"
+  "WorkerA:worker-api"
+  "WorkerB:worker-web"
 )
 
 # Optional: only alert when bot has an active task in some database.

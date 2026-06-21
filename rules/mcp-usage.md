@@ -1,45 +1,47 @@
-# MCP a nástroje - detailní pravidla
+# MCP servers and tools — usage rules
 
-## Priorita nástrojů
+## Tool priority
 
-| Pořadí | Nástroj | Typ | Cena | Kdy použít |
-|--------|---------|-----|------|------------|
-| 1. | **WebFetch** | Built-in | Zdarma | Známé URL, první volba (99% případů) |
-| 2. | **WebSearch** | Built-in | Zdarma | Vyhledávání, neznáš URL |
-| 3. | **Brave Search** | MCP | Placený | Jen když WebSearch nestačí |
-| 4. | **Playwright** | MCP | Zdarma | Jen JS-heavy weby kde WebFetch vrátí prázdný obsah |
+| Priority | Tool | Type | Cost | When to use |
+|---|---|---|---|---|
+| 1 | **WebFetch** | Built-in | Free | Known URL — first choice (99% of cases) |
+| 2 | **WebSearch** | Built-in | Free | Search when you don't know the URL |
+| 3 | **Brave Search** | MCP | Paid | Only when WebSearch doesn't return enough |
+| 4 | **Playwright** | MCP | Free | Only for JS-heavy sites where WebFetch returns empty content |
 
-## Rozhodovací strom
+## Decision tree
 
-1. Znám URL? → **WebFetch**
-2. Potřebuji vyhledat? → **WebSearch**
-3. WebSearch nestačí? → **Brave Search** (šetři - placené API)
-4. WebFetch vrátil prázdný obsah (React/Vue/Angular app)? → **Playwright MCP**
+1. Know the URL? → **WebFetch**
+2. Need to search? → **WebSearch**
+3. WebSearch not enough? → **Brave Search** (paid — use sparingly)
+4. WebFetch returned empty content (React/Vue/Angular SPA)? → **Playwright MCP**
 
-## Brave Search optimalizace
+## Brave Search tips
 
-- Placený API ($5/1000 requestů) - šetři!
-- Kombinuj dotazy: místo 5 separátních udělej 1 komplexní
-- Cache výsledky v rámci session
-- Pokud znáš URL, jdi přímo přes WebFetch
+- Paid API ($5/1,000 requests) — combine queries instead of making 5 separate calls
+- Cache results within the session
+- If you know the URL, use WebFetch directly
 
-## Playwright MCP pravidla
+## Playwright MCP rules
 
-- NIKDY jako první volba - vždy zkus WebFetch nejdřív
-- Preferuj microsoft/playwright-mcp (accessibility tree based)
-- Použij pro: screenshot, interakci s webem, JS-rendered obsah
-- Nepoužívej pro: statické stránky, API dokumentace, GitHub
+- NEVER as first choice — always try WebFetch first
+- Prefer `microsoft/playwright-mcp` (accessibility tree based, lower cost)
+- Use for: screenshots, web interaction, JS-rendered content
+- Do NOT use for: static pages, API documentation, GitHub
 
-## Aktivní MCP servery
+## MCP server catalogue
 
-| Server | Účel |
-|--------|------|
-| memory | Persistentní knowledge graph |
-| brave-search | Webové vyhledávání (placené) |
-| playwright | Browser automation |
-| github | GitHub API rozšíření |
-| supabase | Supabase management |
-| notion (2x) | Notion API (starý + nový Anthropic MCP) |
-| context7 | Dokumentace knihoven |
-| filesystem | Rozšířené souborové operace |
-| vercel | Vercel deployment |
+The pack does not prescribe which MCP servers you run — add what your stack needs.
+Common choices (listed as examples, not requirements):
+
+| Server | Purpose |
+|---|---|
+| `brave-search` | Paid web search |
+| `playwright` | Browser automation |
+| `github` | GitHub API extensions |
+| `filesystem` | Extended file operations |
+| `context7` | Library documentation lookup |
+| `memory` | Persistent knowledge graph |
+
+Add your MCP servers to `~/.claude/settings.json` under `mcpServers`.
+`/doctor` will report how many are configured and reachable.

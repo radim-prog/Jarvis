@@ -1,35 +1,37 @@
-# Zachování kontextu důležitých konverzací
+# Saving context from important conversations
 
-Když uživatel dá **10+ řádkové detailní zadání**, popíše důležité rozhodnutí, vysvětlí kontext nebo specifikuje požadavky na funkcionalitu → VŽDY vytvoř soubor:
+When the user gives a **10+ line detailed brief**, describes an important decision,
+explains context, or specifies feature requirements → ALWAYS create a file:
 
 ```
-.claude-context/YYYY-MM-DD-nazev-temy.md
+.claude-context/YYYY-MM-DD-topic-name.md
 ```
 
-## Formát souboru
+## File format
 
 ```markdown
-# [Název tématu]
-**Datum:** YYYY-MM-DD
-**Kategorie:** [funkcionalita|design|architektura|business]
+# [Topic name]
+**Date:** YYYY-MM-DD
+**Category:** [feature|design|architecture|business]
 
-## Původní zadání uživatele
-[Doslovná citace nebo pečlivé shrnutí]
+## Original assignment
+[Verbatim quote or careful summary]
 
-## Klíčová rozhodnutí
-- Rozhodnutí 1
-- Rozhodnutí 2
+## Key decisions
+- Decision 1
+- Decision 2
 
-## Důvody a kontext
-Proč bylo toto rozhodnuto...
+## Reasoning and context
+Why this was decided...
 
-## Akční body
-- [ ] Co bylo implementováno
-- [ ] Co zbývá udělat
+## Action items
+- [ ] What was implemented
+- [ ] What remains to do
 ```
 
-## Pravidla
+## Rules
 
-- Před začátkem práce na projektu: zkontroluj jestli existuje `.claude-context/`, pokud ne, vytvoř
-- Přečti si poslední soubory v `.claude-context/` pro kontext projektu
-- Kontextové soubory jsou READ-ONLY reference - neměň staré, přidávej nové
+- Before starting work on a project: check whether `.claude-context/` exists;
+  create it if not.
+- Read the most recent files in `.claude-context/` to restore project context.
+- Context files are READ-ONLY references — don't edit old ones, only add new ones.

@@ -1,46 +1,46 @@
-# Research-First Workflow - Detailní příklady
+# Research-First Workflow — detailed examples
 
-## 5-krokový proces
-
-```
-1. VÝZKUM     → Hledej zkušenosti v EN (Stack Overflow, GitHub Issues, Reddit)
-2. SBĚR       → Zaznamenej všechna řešení + credibilitu zdrojů
-3. ANALÝZA    → Je to aktuální? Existuje shoda 3+ zdrojů?
-4. PREZENTACE → Nabídni řešení s vysvětlením PROČ + zdroje
-5. IMPLEMENTACE → Až po schválení uživatelem
-```
-
-## Příklad
+## 5-step process
 
 ```
-User: "Mám error CORS při volání API"
+1. RESEARCH    → Search for prior art in English (Stack Overflow, GitHub Issues, Reddit)
+2. COLLECT     → Record all solutions + source credibility
+3. ANALYSE     → Is it current? Do 3+ sources agree?
+4. PRESENT     → Offer solution with "why" explanation + sources
+5. IMPLEMENT   → Only after user confirmation
+```
 
-ŠPATNĚ: [Rovnou přidává headers do kódu]
+## Example
 
-SPRÁVNĚ:
+```
+User: "I'm getting a CORS error when calling the API"
+
+WRONG: [Immediately adds headers to the code]
+
+RIGHT:
   1. WebSearch("CORS error API call solutions 2025")
-  2. Najde 3 přístupy: proxy, server headers, browser extension
-  3. Zjistí že většina doporučuje server-side řešení
+  2. Finds 3 approaches: proxy, server headers, browser extension
+  3. Majority recommend the server-side solution
 
-  "Našel jsem 3 hlavní přístupy k CORS problému:
-   1. Server-side headers (doporučeno většinou)
-   2. Proxy server (pokud nemáš kontrolu nad API)
-   3. Browser extension (jen pro vývoj)
-   Zdroje: Stack Overflow (500+ upvotes), MDN docs
-   Které řešení chceš použít?"
+  "I found 3 main approaches to the CORS problem:
+   1. Server-side headers (recommended by most sources)
+   2. Proxy server (if you don't control the API)
+   3. Browser extension (dev only)
+   Sources: Stack Overflow (500+ upvotes), MDN docs
+   Which approach do you want to use?"
 ```
 
-## Výjimky (kdy nemusíš dělat výzkum)
+## Exceptions (skip the research step)
 
-- Triviální změny (překlepy, formátování)
-- Uživatel explicitně říká "udělej to takhle"
-- Standardní operace (git commit, npm install)
-- Řešení je 100% jasné
+- Trivial changes (typos, formatting)
+- User explicitly says "do it this way"
+- Standard operations (git commit, npm install)
+- Solution is 100% unambiguous
 
-## Supervisor mode varianta
+## Supervisor / autonomous mode variant
 
-V supervisor režimu se krok 4-5 mění:
-- 3+ zdroje souhlasí → implementuj bez ptaní
-- 2 zdroje souhlasí, 0 nesouhlasí → implementuj, zaloguj
-- Žádná shoda → zkus nejčastější řešení, zaloguj riziko
-- Zdroje si protiřečí → začni bezpečnější variantou
+In an autonomous run, steps 4–5 change:
+- 3+ sources agree → implement without asking
+- 2 sources agree, 0 disagree → implement, log the decision
+- No consensus → try the most common solution, log the risk
+- Sources contradict each other → start with the safer variant

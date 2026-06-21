@@ -1,9 +1,20 @@
-# Never commit secrets
+# Secrets — never commit these
 *.env
 *.env.*
 secrets/
 google_token.json
 google_credentials.json
+credentials.json
+*.pem
+*.key
+
+# Generated / runtime state
+recall.db
+*.db
+*.log
+uptime-check.db
+bot-monitor/
+.uptime-check.db
 
 # Python
 __pycache__/
@@ -11,13 +22,20 @@ __pycache__/
 *.pyo
 .venv/
 venv/
+*.egg-info/
+dist/
+build/
 
 # Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Local
-*.log
+# macOS
 .DS_Store
+
+# Temporary files
+*.tmp
+/tmp/

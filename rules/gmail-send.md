@@ -1,43 +1,49 @@
-# Gmail send — univerzální CLI pro posílání e-mailů
+# gmail-send — CLI helper for sending email via Gmail API
 
-Na tomto stroji je k dispozici **`gmail-send`** — globálně nainstalovaný Python helper, který používá uživatelův OAuth token (`~/.claude/secrets/google_token.json`, scope `gmail.modify`) pro posílání e-mailů přímo z Gmail API. Funguje z jakékoli Claude Code instance, včetně sessions napojených na Telegram bota přes channels plugin.
+`gmail-send` is a globally-installed Python helper that uses your OAuth token
+(`~/.claude/secrets/google_token.json`, scope `gmail.modify`) to send email
+directly through the Gmail API. Works from any Claude Code session, including
+sessions wired to a messaging integration via the channels plugin.
 
-## Kdy použít
+## When to use
 
-- Uživatel tě výslovně požádá o odeslání e-mailu
-- Potřebuješ poslat notifikaci o dokončení dlouhého taska, chybě v pipeline, výsledku monitoringu
-- Reportuj stav experimentu / setupu / deployu jako asynchronní shrnutí
-- NEPOUŽÍVEJ pro draft-only scénáře — na to má Claude.ai vestavěný Gmail MCP connector (`mcp__claude_ai_Gmail__gmail_create_draft`). Ten nemá `send` — ale pro tvorbu draftů které si uživatel zkontroluje je lepší, protože se zobrazí v Gmail webu.
+- User explicitly asks to send an email
+- Sending a notification about a completed long-running task, pipeline error,
+  or monitoring result
+- Async summary report for a deploy / experiment / setup run
+- **NOT** for draft-only scenarios — for drafts that need human review before
+  sending, use the Gmail MCP connector (`mcp__claude_ai_Gmail__create_draft`)
+  so the draft appears in the Gmail web UI for approval.
 
-## Binární umístění
+## Binary location
 
 ```
-$HOME/.claude/secrets/gmail_send.py   # zdroj
-/usr/local/bin/gmail-send              # symlink (na PATH)
+$HOME/.claude/secrets/gmail_send.py   # source
+/usr/local/bin/gmail-send              # symlink (on PATH)
 ```
 
-Env var v secrets: `GMAIL_SEND_SCRIPT=$HOME/.claude/secrets/gmail_send.py`
+Env var (set in secrets): `GMAIL_SEND_SCRIPT=$HOME/.claude/secrets/gmail_send.py`
 
-## Použití
+## Usage
 
-### 1) Inline body (nejjednodušší)
+### 1) Inline body (simplest)
 
 ```bash
-gmail-send --to user@example.com --subject "Ahoj" --body "Text zprávy"
+gmail-send --to user@example.com --subject "Hello" --body "Message body"
 ```
 
-### 2) Body ze souboru
+### 2) Body from file
 
 ```bash
 gmail-send --to user@example.com --subject "Report" --body-file /tmp/report.txt
 ```
 
-### 3) Body ze stdin (heredoc friendly)
+### 3) Body from stdin (heredoc friendly)
 
 ```bash
 gmail-send --to user@example.com --subject "Log" --body-file - <<'EOF'
-Víceřádkový
-text bez escape problémů.
+Multi-line
+text with no escaping issues.
 EOF
 ```
 
@@ -47,7 +53,7 @@ EOF
 gmail-send --to user@example.com --subject "HTML report" --body-file report.html --html
 ```
 
-### 5) JSON stdin (pro dlouhé/komplexní zprávy — bez shell escape)
+### 5) JSON stdin (for long / complex messages — no shell escaping)
 
 ```bash
 echo '{"to":"user@example.com","subject":"Test","body":"<b>hi</b>","html":true,"cc":"other@example.com"}' | gmail-send --json
@@ -56,7 +62,7 @@ echo '{"to":"user@example.com","subject":"Test","body":"<b>hi</b>","html":true,"
 JSON schema:
 ```json
 {
-  "to":        "required, comma-separated pro víc recipientů",
+  "to":        "required, comma-separated for multiple recipients",
   "subject":   "required",
   "body":      "required",
   "cc":        "optional",
@@ -67,17 +73,17 @@ JSON schema:
 }
 ```
 
-### 6) Dry-run (pro testování)
+### 6) Dry-run (for testing)
 
 ```bash
 gmail-send --to user@example.com --subject "test" --body "test" --dry-run
 ```
 
-Vrátí JSON bez skutečného odeslání — užitečné pro ověření že arg parsing funguje.
+Returns JSON without actually sending — useful to verify arg parsing.
 
-## Výstup
+## Output
 
-Stdout: JSON s výsledkem. Při úspěchu:
+Stdout: JSON result. On success:
 ```json
 {
   "ok": true,
@@ -89,44 +95,47 @@ Stdout: JSON s výsledkem. Při úspěchu:
 }
 ```
 
-Při chybě stderr dostane:
+On error, stderr receives:
 ```json
-{"ok": false, "error": "popis chyby"}
+{"ok": false, "error": "error description"}
 ```
 
-Exit code: 0 OK, 1 chyba, 2 missing libs.
+Exit code: 0 OK, 1 error, 2 missing libs.
 
-## Doporučený workflow pro dlouhé/HTML e-maily
+## Recommended workflow for long / HTML emails
 
-Pro bezpečné posílání dlouhého obsahu bez shell escape hell:
+To safely send long content without shell escape issues:
 
-1. Zapiš body do souboru (`/tmp/email-body.html`)
-2. Zavolej: `gmail-send --to ... --subject "..." --body-file /tmp/email-body.html --html`
-3. Smaž temp: `rm /tmp/email-body.html`
+1. Write the body to a file (`/tmp/email-body.html`)
+2. Call: `gmail-send --to ... --subject "..." --body-file /tmp/email-body.html --html`
+3. Clean up: `rm /tmp/email-body.html`
 
-Nebo přes JSON stdin + heredoc:
+Or via JSON stdin + heredoc:
 ```bash
 python3 -c "import json; print(json.dumps({'to':'...','subject':'...','body':open('/tmp/body.html').read(),'html':True}))" | gmail-send --json
 ```
 
-## Co NEPOSÍLEJ
+## What NOT to send
 
-- Tokeny, hesla, API klíče, produkční secrets
-- Osobní údaje bez jasného důvodu
-- Automatické notifikace bez explicitního souhlasu uživatele (kromě předem dohodnutých pipelines)
-- Pro produkční změny, platby, smazání dat se VŽDY nejprve zeptej uživatele
+- Tokens, passwords, API keys, or production secrets
+- Personal data without a clear reason
+- Automated notifications without explicit user consent (except pre-agreed pipelines)
+- For production changes, payments, or data deletion — always ask first
 
-## Obnova / troubleshooting
+## Troubleshooting
 
-Pokud `gmail-send` hlásí chybu:
+If `gmail-send` reports an error:
 
-- **`token file not found`** → spusť `python3 $HOME/.claude/secrets/google_auth.py` (interaktivní OAuth flow na portu 8085)
-- **`HttpError 401` / Unauthorized** → token expiroval, refresh selhal. Re-auth přes google_auth.py.
-- **`HttpError 403` / Forbidden** → scope issue. Ověř že `gmail.modify` je v `scopes` pole v `google_token.json`.
+- **`token file not found`** → run `python3 $HOME/.claude/secrets/google_auth.py`
+  (interactive OAuth flow on port 8085)
+- **`HttpError 401` / Unauthorized** → token expired, refresh failed. Re-auth
+  via `google_auth.py`.
+- **`HttpError 403` / Forbidden** → scope issue. Check that `gmail.modify` is
+  in the `scopes` field in `google_token.json`.
 - **`missing google libs`** → `pip3 install google-auth google-api-python-client google-auth-oauthlib`
 
-## Související
+## Related
 
-- `gdrive.py` — Google Drive helper (existující, vedle gmail_send.py)
-- `google_auth.py` — OAuth token generátor (spustí se interaktivně když token expiruje)
-- `mcp__claude_ai_Gmail__*` — Claude.ai Gmail MCP (draft, read, search — NE send)
+- `gdrive.py` — Google Drive helper (lives alongside `gmail_send.py`)
+- `google_auth.py` — OAuth token generator (run interactively when token expires)
+- Gmail MCP tools — `create_draft`, `search_threads`, etc. (read/draft, not send)
